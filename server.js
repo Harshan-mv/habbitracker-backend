@@ -7,6 +7,7 @@ const authRoutes = require('./routes/authRoutes');
 const habitRoutes = require('./routes/habitRoutes');
 const logRoutes = require('./routes/logRoutes');
 const taskRoutes = require('./routes/taskRoutes');
+const financeRoutes = require('./routes/financeRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -22,6 +23,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/habits', habitRoutes);
 app.use('/api/logs', logRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/finance', financeRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
