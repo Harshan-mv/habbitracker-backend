@@ -116,13 +116,13 @@ exports.getHistory = async (req, res) => {
       if (!doc) {
         return { month: m, income: 0, expenses: 0, savings: 0 };
       }
-      const income = doc.incomes.reduce((s, i) => s + i.amount, 0) + doc.carryForward;
+      const income = doc.incomes.reduce((s, i) => s + i.amount, 0) + (doc.carryForward || 0);
       const expenses = doc.expenses.reduce((s, e) => s + e.amount, 0);
       return {
         month: m,
         income,
         expenses,
-        savings: income - expenses - doc.savingsGoal - doc.emergencyFund,
+        savings: income - expenses - (doc.savingsGoal || 0) - (doc.emergencyFund || 0),
       };
     });
 
