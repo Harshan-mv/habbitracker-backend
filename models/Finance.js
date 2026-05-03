@@ -12,7 +12,7 @@ const expenseSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
   category: {
     type: String,
-    enum: ['EMI', 'Transport', 'Food', 'Health', 'Trading', 'Investment', 'Entertainment', 'Emergency Fund', 'Other'],
+    enum: ['EMI', 'Transport', 'Food', 'Health', 'Investment', 'Entertainment', 'Emergency Fund', 'Other'],
     default: 'Other',
   },
 });
@@ -32,6 +32,7 @@ const financeSchema = new mongoose.Schema({
   realizedPnL: { type: Number, default: 0 },
   charges: { type: Number, default: 0 },
   savingsGoal: { type: Number, default: 0 },
+  savingsTarget: { type: Number, default: 0 },
   savingsAchieved: { type: Number, default: 0 },
   emergencyFund: { type: Number, default: 0 },
   emergencyAchieved: { type: Number, default: 0 },

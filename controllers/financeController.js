@@ -25,8 +25,9 @@ const getOrCreate = async (userId, month) => {
       carryForward = prevIncome - prevExpenses - prevSavingsGoal - prevEmergencyFund;
       if (carryForward < 0) carryForward = 0;
 
-      prevSavingsAchieved = (prevDoc.savingsAchieved || 0) + prevSavingsGoal;
-      prevEmergencyAchieved = (prevDoc.emergencyAchieved || 0) + prevEmergencyFund;
+      prevSavingsAchieved = (prevDoc.savingsAchieved || 0);
+      prevEmergencyAchieved = (prevDoc.emergencyAchieved || 0);
+      savingsTarget = prevDoc.savingsTarget || 0;
       emergencyTarget = prevDoc.emergencyTarget || 100000;
       emiMonthsLeft = Math.max((prevDoc.emiMonthsLeft || 0) - 1, 0);
       emiTotalMonths = prevDoc.emiTotalMonths || 0;
@@ -40,6 +41,7 @@ const getOrCreate = async (userId, month) => {
         expenses: [],
         carryForward,
         savingsAchieved: prevSavingsAchieved,
+        savingsTarget,
         emergencyAchieved: prevEmergencyAchieved,
         emergencyTarget,
         emiMonthsLeft,
@@ -73,7 +75,7 @@ exports.updateMonth = async (req, res) => {
     const doc = await getOrCreate(req.user.userId, req.params.month);
     const allowed = [
       'incomes', 'expenses', 'realizedPnL', 'charges',
-      'savingsGoal', 'savingsAchieved', 'emergencyFund', 'emergencyAchieved', 'emergencyTarget',
+      'savingsGoal', 'savingsTarget', 'savingsAchieved', 'emergencyFund', 'emergencyAchieved', 'emergencyTarget',
       'emiMonthsLeft', 'emiTotalMonths', 'carryForward',
     ];
     for (const key of allowed) {
