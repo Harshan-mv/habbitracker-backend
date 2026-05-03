@@ -5,7 +5,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 router.use(authMiddleware);
 
-router.get('/history/:count', financeController.getHistory);
+
 router.get('/:month', financeController.getMonth);
 router.put('/:month', financeController.updateMonth);
 

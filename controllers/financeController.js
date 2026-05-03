@@ -91,46 +91,4 @@ exports.updateMonth = async (req, res) => {
   }
 };
 
-// GET /api/finance/history/:count — get last N months for cashflow chart
-exports.getHistory = async (req, res) => {
-  try {
-    const count = parseInt(req.params.count) || 6;
-    const now = new Date();
-    const months = [];
-    for (let i = count - 1; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      months.push(key);
-    }
 
-    const docs = await Finance.find({
-      userId: req.user.userId,
-      month: { $in: months },
-    });
-
-    const docMap = {};
-    for (const d of docs) {
-      docMap[d.month] = d;
-    }
-
-    const result = months.map((m) => {
-      const doc = docMap[m];
-      if (!doc) {
-        return { month: m, income: 0, expenses: 0, savings: 0 };
-      }
-      const income = doc.incomes.reduce((s, i) => s + i.amount, 0) + (doc.carryForward || 0);
-      const expenses = doc.expenses.reduce((s, e) => s + e.amount, 0);
-      return {
-        month: m,
-        income,
-        expenses,
-        savings: income - expenses - (doc.savingsGoal || 0) - (doc.emergencyFund || 0),
-      };
-    });
-
-    res.json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server Error' });
-  }
-};
