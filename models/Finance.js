@@ -40,6 +40,8 @@ const financeSchema = new mongoose.Schema({
   emiMonthsLeft: { type: Number, default: 0 },
   emiTotalMonths: { type: Number, default: 0 },
   carryForward: { type: Number, default: 0 },
+  prevSavingsAchieved: { type: Number, default: 0 },
+  prevEmergencyAchieved: { type: Number, default: 0 },
 }, { timestamps: true });
 
 // One document per user per month

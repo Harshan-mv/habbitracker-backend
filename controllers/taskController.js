@@ -34,7 +34,7 @@ exports.updateTask = async (req, res) => {
     const updatedTask = await Task.findOneAndUpdate(
       { _id: req.params.id, userId: req.user.userId },
       req.body,
-      { new: true }
+      { returnDocument: 'after' }
     );
     if (!updatedTask) {
       return res.status(404).json({ error: 'Task not found' });
