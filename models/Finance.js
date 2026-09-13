@@ -42,6 +42,7 @@ const financeSchema = new mongoose.Schema({
   carryForward: { type: Number, default: 0 },
   prevSavingsAchieved: { type: Number, default: 0 },
   prevEmergencyAchieved: { type: Number, default: 0 },
+  note: { type: String, default: '' },
 }, { timestamps: true });
 
 // One document per user per month
