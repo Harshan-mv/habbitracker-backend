@@ -9,5 +9,6 @@ const habitLogSchema = new mongoose.Schema({
 
 // Ensure a habit can only be logged once per day per user
 habitLogSchema.index({ habitId: 1, userId: 1, date: 1 }, { unique: true });
+habitLogSchema.index({ userId: 1, date: 1 });
 
 module.exports = mongoose.model('HabitLog', habitLogSchema);

@@ -1,4 +1,22 @@
 const Finance = require('../models/Finance');
+const Goal = require('../models/Goal');
+const GoalAllocation = require('../models/GoalAllocation');
+const { hardCap } = require('../utils/pagination');
+const { invalidateUser } = require('../utils/cache');
+
+const getIncludedGoalAllocations = async (userId, month) => {
+  const activeGoals = await Goal.find({
+    userId,
+    status: { $in: ['active', 'completed'] },
+  }).select('_id').lean();
+  if (!activeGoals.length) return 0;
+  const allocations = await GoalAllocation.find({
+    userId,
+    goalId: { $in: activeGoals.map((goal) => goal._id) },
+    month,
+  }).select('amount').lean();
+  return allocations.reduce((sum, allocation) => sum + allocation.amount, 0);
+};
 
 // Helper: get or create a finance doc for user + month
 const getOrCreate = async (userId, month) => {
@@ -23,7 +41,8 @@ const getOrCreate = async (userId, month) => {
       const prevExpenses = prevDoc.expenses.reduce((s, e) => s + e.amount, 0);
       const prevSavingsGoal = prevDoc.savingsGoal || 0;
       const prevEmergencyFund = prevDoc.emergencyFund || 0;
-      carryForward = prevIncome - prevExpenses - prevSavingsGoal - prevEmergencyFund;
+      const prevCustomGoalAllocations = await getIncludedGoalAllocations(userId, prevMonth);
+      carryForward = prevIncome - prevExpenses - prevSavingsGoal - prevEmergencyFund - prevCustomGoalAllocations;
       if (carryForward < 0) carryForward = 0;
 
       // Accumulate total saved from previous month (historical total + previous month's contribution)
@@ -67,6 +86,10 @@ const getOrCreate = async (userId, month) => {
 exports.getMonth = async (req, res) => {
   try {
     const doc = await getOrCreate(req.user.userId, req.params.month);
+    const financeItemsLimit = hardCap('FINANCE_ITEMS_HARD_CAP', 1000);
+    if (doc.incomes.length + doc.expenses.length > financeItemsLimit) {
+      return res.status(413).json({ error: `Monthly finance items exceed the configured limit of ${financeItemsLimit}` });
+    }
     
     // Auto-sync from previous month just in case it was updated
     const [y, m] = req.params.month.split('-').map(Number);
@@ -80,7 +103,8 @@ exports.getMonth = async (req, res) => {
       const prevExpenses = prevDoc.expenses.reduce((s, e) => s + e.amount, 0);
       const prevSavingsGoal = prevDoc.savingsGoal || 0;
       const prevEmergencyFund = prevDoc.emergencyFund || 0;
-      let cf = prevIncome - prevExpenses - prevSavingsGoal - prevEmergencyFund;
+      const prevCustomGoalAllocations = await getIncludedGoalAllocations(req.user.userId, prevMonthStr);
+      let cf = prevIncome - prevExpenses - prevSavingsGoal - prevEmergencyFund - prevCustomGoalAllocations;
       doc.carryForward = Math.max(0, cf);
 
       // Recalculate achieved totals
@@ -114,19 +138,22 @@ exports.updateMonth = async (req, res) => {
     const allowed = [
       'incomes', 'expenses', 'realizedPnL', 'charges',
       'savingsGoal', 'savingsTarget', 'savingsAchieved', 'emergencyFund', 'emergencyAchieved', 'emergencyTarget',
-      'emiMonthsLeft', 'emiTotalMonths', 'carryForward', 'prevSavingsAchieved', 'prevEmergencyAchieved'
+      'emiMonthsLeft', 'emiTotalMonths', 'carryForward', 'prevSavingsAchieved', 'prevEmergencyAchieved', 'note'
     ];
     for (const key of allowed) {
       if (req.body[key] !== undefined) {
         doc[key] = req.body[key];
       }
     }
+    const financeItemsLimit = hardCap('FINANCE_ITEMS_HARD_CAP', 1000);
+    if (doc.incomes.length + doc.expenses.length > financeItemsLimit) {
+      return res.status(413).json({ error: `Monthly finance items exceed the configured limit of ${financeItemsLimit}` });
+    }
     await doc.save();
+    invalidateUser(req.user.userId);
     res.json(doc);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to update finance data' });
   }
 };
-
-

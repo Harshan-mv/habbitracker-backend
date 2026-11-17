@@ -4,17 +4,14 @@ const incomeSchema = new mongoose.Schema({
   _id: { type: String },
   name: { type: String, required: true },
   amount: { type: Number, required: true },
+  sourceType: { type: String, default: '' },
 });
 
 const expenseSchema = new mongoose.Schema({
   _id: { type: String },
   name: { type: String, required: true },
   amount: { type: Number, required: true },
-  category: {
-    type: String,
-    enum: ['EMI', 'Transport', 'Food', 'Health', 'Investment', 'Entertainment', 'Emergency Fund', 'Other'],
-    default: 'Other',
-  },
+  category: { type: String, default: 'Other' },
 });
 
 const financeSchema = new mongoose.Schema({
