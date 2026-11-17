@@ -1,5 +1,6 @@
 # Logs
 .env
+.env.example
 node_modules
 logs
 *.log

@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Subscription = require('../models/Subscription');
 const auth = require('../middleware/authMiddleware');
+const validateBody = require('../middleware/validateBody');
+const { pushSubscriptionBody, pushUnsubscribeBody } = require('../middleware/requestSchemas');
 
 // Route to get VAPID public key
 router.get('/vapidPublicKey', (req, res) => {
@@ -9,9 +11,9 @@ router.get('/vapidPublicKey', (req, res) => {
 });
 
 // Route to subscribe
-router.post('/subscribe', auth, async (req, res) => {
+router.post('/subscribe', auth, validateBody(pushSubscriptionBody), async (req, res) => {
   const subscription = req.body;
-  const userId = req.user.id; // assuming auth middleware is used before this
+  const userId = req.user.userId;
 
   try {
     await Subscription.findOneAndUpdate(
@@ -27,10 +29,10 @@ router.post('/subscribe', auth, async (req, res) => {
 });
 
 // Route to unsubscribe
-router.post('/unsubscribe', auth, async (req, res) => {
+router.post('/unsubscribe', auth, validateBody(pushUnsubscribeBody), async (req, res) => {
   const { endpoint } = req.body;
   try {
-    await Subscription.deleteOne({ endpoint });
+    await Subscription.deleteOne({ endpoint, userId: req.user.userId });
     res.status(200).json({ message: 'Unsubscribed successfully.' });
   } catch (error) {
     console.error('Error unsubscribing:', error);

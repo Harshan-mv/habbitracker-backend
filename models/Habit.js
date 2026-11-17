@@ -8,4 +8,6 @@ const habitSchema = new mongoose.Schema({
   isArchived: { type: Boolean, default: false },
 });
 
+habitSchema.index({ userId: 1, isArchived: 1, createdAt: 1 });
+
 module.exports = mongoose.model('Habit', habitSchema);

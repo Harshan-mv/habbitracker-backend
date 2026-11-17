@@ -36,19 +36,22 @@ async function sendNotificationToUser(userId, payload) {
 }
 
 function startCronJobs() {
+  const jobs = [];
   // At 10:00 AM every day
-  cron.schedule('0 10 * * *', async () => {
+  jobs.push(cron.schedule('0 10 * * *', async () => {
     console.log('Running 10 AM Notification Job');
     await checkAndSendTaskReminders();
     await checkAndSendHabitReminders();
-  });
+  }));
 
   // At 9:00 PM every day
-  cron.schedule('0 21 * * *', async () => {
+  jobs.push(cron.schedule('0 21 * * *', async () => {
     console.log('Running 9 PM Notification Job');
     await checkAndSendTaskReminders();
     await checkAndSendHabitReminders();
-  });
+  }));
+
+  return () => jobs.forEach((job) => job.stop());
 }
 
 async function checkAndSendHabitReminders() {
@@ -80,10 +83,7 @@ async function checkAndSendTaskReminders() {
   // "push notification before the last day and 2 day before of todo list date."
   try {
     const now = new Date();
-    const oneDayFromNow = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-    const twoDaysFromNow = new Date(now.getTime() + 48 * 60 * 60 * 1000);
-    
-    const tasks = await Task.find({ status: { $ne: 'completed' } });
+    const tasks = await Task.find({ status: { $ne: 'Done' } });
     
     for (const task of tasks) {
       if (!task.dueDate) continue;
