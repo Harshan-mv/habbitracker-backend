@@ -19,7 +19,7 @@ router.post('/subscribe', auth, validateBody(pushSubscriptionBody), async (req, 
     await Subscription.findOneAndUpdate(
       { endpoint: subscription.endpoint },
       { ...subscription, userId },
-      { upsert: true, new: true }
+      { upsert: true, returnDocument: 'after' }
     );
     res.status(201).json({ message: 'Subscription saved.' });
   } catch (error) {

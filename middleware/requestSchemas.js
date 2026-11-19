@@ -15,6 +15,27 @@ const loginBody = z.object({
   password: z.string().min(1),
 }).passthrough();
 
+const googleCredentialBody = z.object({
+  credential: z.string().min(1).max(8192),
+}).passthrough();
+
+const resetEmail = z.string().trim().email().max(254);
+
+const forgotPasswordBody = z.object({
+  email: resetEmail,
+}).passthrough();
+
+const verifyOtpBody = z.object({
+  email: resetEmail,
+  code: z.string().regex(/^\d{6}$/),
+}).passthrough();
+
+const resetPasswordBody = z.object({
+  email: resetEmail,
+  resetToken: z.string().min(1).max(256),
+  password: z.string().min(6),
+}).passthrough();
+
 const taskCreateBody = z.object({
   title: z.string().min(1),
   status: z.enum(['Not Started', 'In Progress', 'Done', 'Blocked']).optional(),
@@ -112,6 +133,10 @@ module.exports = {
   objectBody,
   registerBody,
   loginBody,
+  googleCredentialBody,
+  forgotPasswordBody,
+  verifyOtpBody,
+  resetPasswordBody,
   taskCreateBody,
   taskUpdateBody,
   batchTasksBody,

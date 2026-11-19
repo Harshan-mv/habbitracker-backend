@@ -157,7 +157,7 @@ exports.updateGoal = async (req, res) => {
     const goal = await Goal.findOneAndUpdate(
       { _id: req.params.id, userId: getUserId(req) },
       { $set: updates },
-      { new: true, runValidators: true },
+      { returnDocument: 'after', runValidators: true },
     );
     if (!goal) return res.status(404).json({ error: 'Goal not found' });
     const contributions = await GoalAllocation.find({ userId: getUserId(req), goalId: goal._id }).select('amount').lean();
@@ -192,7 +192,7 @@ exports.updateAllocation = async (req, res) => {
     await GoalAllocation.findOneAndUpdate(
       { goalId: goal._id, month },
       { $set: { userId, amount } },
-      { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true },
+      { upsert: true, returnDocument: 'after', runValidators: true, setDefaultsOnInsert: true },
     );
 
     const allAllocations = await GoalAllocation.find({ userId, goalId: goal._id }).lean();
