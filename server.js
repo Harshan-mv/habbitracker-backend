@@ -1,4 +1,13 @@
-require('dotenv').config();
+const path = require('path');
+const fs = require('fs');
+const dotenv = require('dotenv');
+
+dotenv.config({ path: path.resolve(__dirname, '.env') });
+const exampleEnv = dotenv.parse(fs.readFileSync(path.resolve(__dirname, '.env.example')));
+if (!process.env.GOOGLE_CLIENT_ID && exampleEnv.GOOGLE_CLIENT_ID) {
+  process.env.GOOGLE_CLIENT_ID = exampleEnv.GOOGLE_CLIENT_ID;
+}
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');

@@ -18,8 +18,18 @@ Set these environment variables in Render:
 - `JWT_SECRET` — long, random signing secret
 - `VAPID_PUBLIC_KEY` and `VAPID_PRIVATE_KEY` — generated Web Push keys
 - `FRONTEND_URL` — `https://habbitracker-frontend.vercel.app`
+- `GOOGLE_CLIENT_ID` — Google OAuth web client ID used to verify Google ID tokens
+- `RESEND_API_KEY` — a newly generated Resend API key; never commit it
+- `MAIL_FROM` — sender address on a domain verified in Resend
+- `OTP_EXPIRY_MINUTES` — OTP lifetime (default 10)
+- `OTP_MAX_ATTEMPTS` — wrong-code limit before invalidation (default 5)
+- `RESET_TOKEN_EXPIRY_MINUTES` — one-use reset token lifetime (default 10)
 
 Render supplies `PORT`. The health check returns 200 only after MongoDB is connected. Allow the Render service's outbound IP addresses in MongoDB Atlas Network Access; avoid opening the database to all IPs if possible.
+
+Set the same Google OAuth web client ID as `VITE_GOOGLE_CLIENT_ID` in the Vercel frontend. Configure the production and local frontend origins as authorized JavaScript origins in Google Cloud. The client ID is public; do not put a Google client secret in the frontend.
+
+Locally, the frontend uses `VITE_GOOGLE_CLIENT_ID` from `.env.example` only as a fallback when it is absent from the active Vite mode environment. The backend uses `GOOGLE_CLIENT_ID` from its `.env.example` only when it is absent from `.env` and the hosting environment. Other backend settings still come from `.env` or the hosting environment.
 
 ## Production hardening
 
@@ -60,7 +70,15 @@ For a free-tier wake-up monitor, create an UptimeRobot HTTP(s) monitor for `/api
    VAPID_PUBLIC_KEY=your_vapid_public_key
    VAPID_PRIVATE_KEY=your_vapid_private_key
    FRONTEND_URL=http://localhost:5173
+   GOOGLE_CLIENT_ID=your_google_oauth_client_id
+   RESEND_API_KEY=your_new_resend_api_key
+   MAIL_FROM="Habit Tracker <no-reply@your-verified-domain.com>"
+   OTP_EXPIRY_MINUTES=10
+   OTP_MAX_ATTEMPTS=5
+   RESET_TOKEN_EXPIRY_MINUTES=10
    ```
+
+Use the same settings in the backend host's environment configuration. Create a new Resend key and verify the sender domain before testing delivery. Do not reuse the compromised key or put any Resend key in source control.
 
 ### Running the Server
 
